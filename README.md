@@ -1,6 +1,6 @@
 # booru-api
 
-# default config/secrets file
+# default config/secrets.ts file
 
 ```ts
 const redisConfig: RedisConfig = {
