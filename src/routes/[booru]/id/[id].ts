@@ -1,4 +1,4 @@
-import { determineBooru } from "@helpers/char";
+import { determineBooru, postExpectedFormat } from "@helpers/char";
 import { fetch } from "bun";
 
 import { redis } from "@/database/redis";
@@ -116,14 +116,41 @@ async function handler(
 			);
 		}
 
-		// let keyString = Array.isArray(data) ? "posts" : "post";
+		const parsedData: Data = data as Data;
+
+		let posts: BooruPost[] = [];
+		if (parsedData.post) {
+			posts = [parsedData.post];
+		} else if (parsedData.posts) {
+			posts = parsedData.posts;
+		} else {
+			posts = Array.isArray(data) ? (data as BooruPost[]) : [];
+		}
+
+		if (posts.length === 0) {
+			return Response.json(
+				{
+					success: false,
+					code: 404,
+					error: "Post not found",
+				},
+				{
+					status: 404,
+				},
+			);
+		}
+
+		const expectedData: { posts: BooruPost[] } | null = postExpectedFormat(
+			booruConfig,
+			posts,
+		);
 
 		return Response.json(
 			{
 				success: true,
 				code: 200,
 				cache: false,
-				data,
+				post: expectedData?.posts[0] || null,
 			},
 			{
 				status: 200,

@@ -17,7 +17,7 @@ export const booruConfig: IBooruConfigMap = {
 		functions: booruDefaults,
 	},
 	"realbooru.com": {
-		enabled: true,
+		enabled: false,
 		name: "realbooru.com",
 		aliases: ["realbooru", "rb", "real34"],
 		endpoint: "realbooru.com",
