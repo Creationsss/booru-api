@@ -10,9 +10,9 @@
    cd booru-api
    ```
 
-2. Rename the example environment file to `.env`:
+2. Copy the example environment file to `.env`:
    ```bash
-   mv .example.env .env
+   cp .example.env .env
    ```
 
 3. Start the application in detached mode:
@@ -30,9 +30,9 @@
    cd booru-api
    ```
 
-2. Rename the example environment file to `.env`:
+2. Copy the example environment file to `.env`:
    ```bash
-   mv .example.env .env
+   cp .example.env .env
    ```
 
 3. Install dependencies using Bun:
