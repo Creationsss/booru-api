@@ -1,4 +1,4 @@
-import { redisConfig } from "@config/secrets";
+import { redisConfig } from "@config/environment";
 import { logger } from "@helpers/logger";
 import { createClient, type RedisClientType } from "redis";
 
@@ -23,6 +23,7 @@ class RedisJson {
 			RedisJson.instance.client.on("error", (err: Error) => {
 				logger.error("Redis connection error:");
 				logger.error((err as Error) || "Unknown error");
+				logger.error(redisConfig.host);
 				process.exit(1);
 			});
 

@@ -27,6 +27,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"dotenv": "^16.4.7",
 		"redis": "^4.7.0"
 	}
 }
