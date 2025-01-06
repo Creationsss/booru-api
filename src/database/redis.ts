@@ -103,8 +103,8 @@ class RedisJson {
 		type: "JSON" | "STRING",
 		key: string,
 		value: unknown,
-		path?: string,
 		expiresInSeconds?: number,
+		path?: string,
 	): Promise<void> {
 		if (!this.client) {
 			logger.error("Redis client is not initialized.");

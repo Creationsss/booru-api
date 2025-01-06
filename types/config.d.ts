@@ -24,6 +24,7 @@ type IBooruConfigMap = {
 		aliases: string[];
 		endpoint: string;
 		functions: IBooruDefaults;
+		autocomplete?: string;
 		auth?: Record<string, string>;
 	};
 };
@@ -34,5 +35,6 @@ type IBooruConfig = {
 	aliases: string[];
 	endpoint: string;
 	functions: IBooruDefaults;
+	autocomplete?: string;
 	auth?: Record<string, string>;
 };

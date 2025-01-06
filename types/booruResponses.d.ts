@@ -4,32 +4,23 @@ type Data = {
 	[key: string]: unknown;
 };
 
-interface Rule34Post {
-	preview_url: string;
-	sample_url: string;
-	file_url: string;
+interface DefaultPost {
 	directory: number;
 	hash: string;
-	width: number;
-	height: number;
 	id: number;
 	image: string;
-	change: number;
-	owner: string;
-	parent_id: number;
-	rating: string;
-	sample: boolean;
-	sample_height: number;
-	sample_width: number;
-	score: number;
 	tags: string;
-	source: string;
-	status: string;
-	has_notes: boolean;
-	comment_count: number;
 }
 
-type BooruPost = Rule34Post & {
-	post_url: string;
-	file_url: string;
+type E621Post = {
+	id: number;
+	file: {
+		url: string;
+	};
+	tags: string;
 };
+
+type BooruPost = {
+	file_url?: string | null;
+	post_url?: string;
+} & (DefaultPost | e621Post);

@@ -149,6 +149,13 @@ class ServerHandler {
 			);
 		}
 
+		logger.info([
+			`[${request.method}]`,
+			request.url,
+			`${response.status}`,
+			server.requestIP(request)?.address || "unknown",
+		]);
+
 		return response;
 	}
 }

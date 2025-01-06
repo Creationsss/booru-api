@@ -43,12 +43,19 @@ export function tagsToExpectedFormat(
 		.join(delimiter);
 }
 
-export function shufflePosts<T>(posts: T[]): T[] {
+export function shufflePosts<BooruPost>(posts: BooruPost[]): BooruPost[] {
 	for (let i: number = posts.length - 1; i > 0; i--) {
 		const j: number = Math.floor(Math.random() * (i + 1));
 		[posts[i], posts[j]] = [posts[j], posts[i]];
 	}
 	return posts;
+}
+
+export function minPosts<BooruPost>(
+	posts: BooruPost[],
+	min: number,
+): BooruPost[] {
+	return posts.slice(0, min);
 }
 
 export function determineBooru(
@@ -66,40 +73,49 @@ export function determineBooru(
 
 export function postExpectedFormat(
 	booru: IBooruConfig,
-	posts: BooruPost[],
+	posts: BooruPost[] | BooruPost,
 ): { posts: BooruPost[] } | null {
 	if (!posts) return null;
 
-	posts = Array.isArray(posts) ? posts : [posts];
-	if (posts.length === 0) return null;
+	const normalizedPosts: BooruPost[] = Array.isArray(posts) ? posts : [posts];
+	if (normalizedPosts.length === 0) return null;
 
-	if (booru.name === "e621.net")
+	if (booru.name === "e621.net") {
 		return {
-			posts: posts.map(
-				(post: BooruPost): BooruPost => ({
+			posts: normalizedPosts.map((post: BooruPost) => {
+				return {
 					...post,
-					file_url: post.file_url,
-					post_url: `https://${booru.endpoint}/posts/${post.id}`,
-					tags: Object.keys(post.tags)
-						.flatMap(
-							(key: string) =>
-								post.tags[key as keyof typeof post.tags],
-						)
+					file_url: post.file.url ?? null,
+					post_url:
+						post.post_url ??
+						`https://${booru.endpoint}/posts/${post.id}`,
+					tags: Object.values(post.tags || {})
+						.flat()
 						.join(" "),
-				}),
-			),
+				};
+			}),
 		};
+	}
 
 	const fixedDomain: string = booru.endpoint.replace(/^api\./, "");
-	const formattedPosts: BooruPost[] = posts.map(
-		(post: BooruPost): BooruPost => {
-			const postUrl: string = `https://${fixedDomain}/index.php?page=post&s=view&id=${post.id}`;
-			const imageExtension: string = post.image.substring(
-				post.image.lastIndexOf(".") + 1,
-			);
-			const fileUrl: string = `https://${booru.endpoint}/images/${post.directory}/${post.hash}.${imageExtension}`;
+	const formattedPosts: BooruPost[] = normalizedPosts.map(
+		(post: BooruPost) => {
+			const postUrl: string =
+				post.post_url ??
+				`https://${fixedDomain}/index.php?page=post&s=view&id=${post.id}`;
+			const imageExtension: string =
+				post.image?.substring(post.image.lastIndexOf(".") + 1) ?? "";
+			const fileUrl: string | null =
+				post.file_url ??
+				(post.directory && post.hash && imageExtension
+					? `https://${booru.endpoint}/images/${post.directory}/${post.hash}.${imageExtension}`
+					: null);
 
-			return { ...post, file_url: fileUrl, post_url: postUrl };
+			return {
+				...post,
+				file_url: fileUrl,
+				post_url: postUrl,
+			};
 		},
 	);
 
