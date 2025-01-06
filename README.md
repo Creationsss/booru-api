@@ -52,7 +52,7 @@
 >
 > ```env
 > # REQUIRED if you want to use the e621 API
-> E621_USER_AGENT=YourBotName/1.0 (by username on e621)
+> E621_USER_AGENT=YourApplicationName/1.0 (by username on e621)
 > E621_USERNAME=your-username
 > E621_API_KEY=your-apikey
 > ```
