@@ -2,3 +2,4 @@
 bun.lockb
 /config/secrets.ts
 .env
+/logs

@@ -2,27 +2,49 @@
 
 ## Setup Instructions
 
-1. Rename the example environment file to `.env`:
+### Production Environment
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd booru-api
+   ```
+
+2. Rename the example environment file to `.env`:
    ```bash
    mv .example.env .env
    ```
 
-2. Start the application in detached mode:
+3. Start the application in detached mode:
    ```bash
    docker compose up -d
    ```
 
 ---
 
-## Default `config/secrets.ts` File
+### Development Environment
 
-```typescript
-const e621Auth: Record<string, string> = {
-  "User-Agent": "your-domain/1.0 (by your-username on e621)",
-  Authorization: "Basic " + btoa("your-username:your-password"),
-};
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd booru-api
+   ```
 
-export { e621Auth };
-```
+2. Rename the example environment file to `.env`:
+   ```bash
+   mv .example.env .env
+   ```
+
+3. Install dependencies using Bun:
+   ```bash
+   bun install
+   ```
+
+4. Start the development server:
+   ```bash
+   bun dev
+   ```
+
+---
 
 > **Note** Replace `your-username` and `your-password` with your e621 account credentials. Update the `User-Agent` string to include your domain and comply with e621's API guidelines.
