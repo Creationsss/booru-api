@@ -1,15 +1,13 @@
-# docker/dev.Dockerfile
 FROM oven/bun:latest
 
-WORKDIR /app/booru-api
+WORKDIR /app
 
 COPY package.json ./
-COPY bun.lockb ./
 
-RUN bun install
+RUN test -f bun.lockb && cp bun.lockb . || true
+
+RUN [ -f bun.lockb ] && bun install --frozen-lockfile || bun install
 
 COPY . .
 
-ENV NEXT_TELEMETRY_DISABLED 1
-
-CMD bun run start
+CMD ["bun", "run", "start"]
