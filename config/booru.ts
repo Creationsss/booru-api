@@ -1,6 +1,6 @@
 // cSpell:disable
 
-import { e621Auth } from "./secrets";
+import { getE621Auth } from "./environment";
 
 const booruDefaults: IBooruDefaults = {
 	search: "index.php?page=dapi&s=post&q=index&json=1",
@@ -68,8 +68,6 @@ export const booruConfig: IBooruConfigMap = {
 			random: "defaultRandom",
 			id: ["posts/", ".json"],
 		},
-		auth: {
-			...e621Auth,
-		},
+		auth: getE621Auth(),
 	},
 };
