@@ -25,4 +25,4 @@ const e621Auth: Record<string, string> = {
 export { e621Auth };
 ```
 
-> **Note**: Replace `your-username` and `your-password` with your e621 account credentials. Update the `User-Agent` string to include your domain and comply with e621's API guidelines.
+> **Note** Replace `your-username` and `your-password` with your e621 account credentials. Update the `User-Agent` string to include your domain and comply with e621's API guidelines.
