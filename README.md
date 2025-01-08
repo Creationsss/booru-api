@@ -12,7 +12,7 @@
 
 2. Copy the example environment file to `.env`:
    ```bash
-   cp .example.env .env
+   cp .env.example .env
    ```
 
 3. Start the application in detached mode:
@@ -32,7 +32,7 @@
 
 2. Copy the example environment file to `.env`:
    ```bash
-   cp .example.env .env
+   cp .env.example .env
    ```
 
 3. Install dependencies using Bun:
