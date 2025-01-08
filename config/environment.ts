@@ -1,12 +1,4 @@
-import dotenv from "dotenv";
-
 import { logger } from "@/helpers/logger";
-
-try {
-	dotenv.config();
-} catch {
-	logger.error("No .env file found consider creating one");
-}
 
 export const environment: Environment = {
 	port: parseInt(process.env.PORT || "6600", 10),
