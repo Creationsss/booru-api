@@ -149,11 +149,22 @@ class ServerHandler {
 			);
 		}
 
+		const headers: Headers = response.headers;
+		let ip: string | null = server.requestIP(request)?.address || null;
+
+		if (!ip) {
+			ip =
+				headers.get("CF-Connecting-IP") ||
+				headers.get("X-Real-IP") ||
+				headers.get("X-Forwarded-For") ||
+				null;
+		}
+
 		logger.info([
 			`[${request.method}]`,
 			request.url,
 			`${response.status}`,
-			server.requestIP(request)?.address || "unknown",
+			`(${ip || "unknown"})`,
 		]);
 
 		return response;
