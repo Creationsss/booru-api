@@ -1,15 +1,25 @@
 const routeDef: RouteDef = {
 	method: "GET",
 	accepts: "*/*",
-	returns: "text/html",
+	returns: "application/json",
 };
 
 async function handler(): Promise<Response> {
-	return new Response("Hello, World!", {
-		headers: {
-			"content-type": "text/html",
+	return Response.json(
+		{
+			success: true,
+			code: 200,
+			message:
+				"Welcome to the booru API, check the documentation for more information",
+			links: {
+				forgejo: "https://forgejo.creations.works/creations/booru-api",
+				GitHub: "https://github.com/Creationsss/booru-api",
+			},
 		},
-	});
+		{
+			status: 200,
+		},
+	);
 }
 
 export { handler, routeDef };
