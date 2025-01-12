@@ -26,7 +26,7 @@
 
 1. Clone the repository:
    ```bash
-   git clone https://forgejo.creations.works/creations/booru-api
+   git clone https://git.creations.works/creations/booru-api
    cd booru-api
    ```
 
