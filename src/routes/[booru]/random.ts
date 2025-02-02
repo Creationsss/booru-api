@@ -281,12 +281,16 @@ async function handler(
 			const parsedData: Data = data as Data;
 
 			let posts: BooruPost[] = [];
-			if (parsedData.post) {
-				posts = [parsedData.post];
-			} else if (parsedData.posts) {
-				posts = parsedData.posts;
+			if (booruConfig.name === "realbooru.com") {
+				posts = parsedData.post || [];
 			} else {
-				posts = Array.isArray(data) ? (data as BooruPost[]) : [];
+				if (parsedData.post) {
+					posts = [parsedData.post];
+				} else if (parsedData.posts) {
+					posts = parsedData.posts;
+				} else {
+					posts = Array.isArray(data) ? (data as BooruPost[]) : [];
+				}
 			}
 
 			if (posts.length === 0) continue;
