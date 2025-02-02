@@ -12,7 +12,7 @@ async function handler(): Promise<Response> {
 			message:
 				"Welcome to the booru API, check the documentation for more information",
 			links: {
-				forgejo: "https://forgejo.creations.works/creations/booru-api",
+				forgejo: "https://git.creations.works/creations/booru-api",
 				GitHub: "https://github.com/Creationsss/booru-api",
 			},
 		},
