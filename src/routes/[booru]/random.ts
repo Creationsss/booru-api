@@ -200,16 +200,6 @@ async function handler(
 	let state: { tries: number; page: number } = { tries: 0, page: 16 };
 
 	while (state.tries < config.maxTries) {
-		if (state.tries === config.maxTries) {
-			state.page = 0;
-		} else {
-			const oldPage: number = state.page;
-
-			do {
-				state.page = Math.floor(Math.random() * config.maxPage);
-			} while (state.page === oldPage);
-		}
-
 		const cacheKey: string = `nsfw:${booru}:random:${tagsString()}:${results}:${state.page}`;
 		if (!force) {
 			const cacheData: unknown = await redis
@@ -322,10 +312,19 @@ async function handler(
 			continue;
 		} finally {
 			state.tries++;
+
+			if (state.tries >= config.maxTries - 1) {
+				state.page = 0;
+			} else {
+				const oldPage: number = state.page;
+				do {
+					state.page = Math.floor(Math.random() * config.maxPage);
+				} while (state.page === oldPage);
+			}
 		}
 	}
 
-	await redis.getInstance().set("JSON", noResultsCacheKey, true, 60 * 30); // 30 minutes
+	await redis.getInstance().set("JSON", noResultsCacheKey, true, 60 * 10); // 10 minutes
 
 	logger.error([
 		"No posts found",
