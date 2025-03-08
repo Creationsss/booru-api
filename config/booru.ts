@@ -18,7 +18,7 @@ export const booruConfig: IBooruConfigMap = {
 		autocomplete: "ac.rule34.xxx/autocomplete.php?q=",
 	},
 	"realbooru.com": {
-		enabled: true,
+		enabled: false,
 		name: "realbooru.com",
 		aliases: ["realbooru", "rb", "real34", "realb"],
 		endpoint: "realbooru.com",
