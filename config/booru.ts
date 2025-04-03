@@ -1,6 +1,6 @@
 // cSpell:disable
 
-import { getE621Auth } from "./environment";
+import { gelBooruAUTH, getE621Auth } from "@config/environment";
 
 const booruDefaults: IBooruDefaults = {
 	search: "index.php?page=dapi&s=post&q=index&json=1",
@@ -69,5 +69,14 @@ export const booruConfig: IBooruConfigMap = {
 			id: ["posts/", ".json"],
 		},
 		auth: getE621Auth(),
+	},
+	"gelbooru.com": {
+		enabled: true,
+		name: "gelbooru.com",
+		aliases: ["gelbooru", "gb", "gelboorucom"],
+		endpoint: "gelbooru.com",
+		autocomplete: "gelbooru.com/index.php?page=autocomplete&term=",
+		functions: booruDefaults,
+		auth: gelBooruAUTH(),
 	},
 };

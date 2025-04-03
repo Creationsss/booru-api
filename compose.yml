@@ -10,18 +10,6 @@ services:
       - "${PORT:-6600}:${PORT:-6600}"
     env_file:
       - .env
-    depends_on:
-      - dragonfly-redis
-    networks:
-      - booru-network
-
-  dragonfly-redis:
-    container_name: dragonfly-redis
-    image: docker.dragonflydb.io/dragonflydb/dragonfly
-    restart: unless-stopped
-    environment:
-      REDIS_PASSWORD: ${redis_password:-pasw0rd}
-    command: ["--requirepass", "${redis_password:-pasw0rd}"]
     networks:
       - booru-network
 

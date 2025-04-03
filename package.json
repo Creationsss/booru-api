@@ -23,11 +23,7 @@
 		"dev": "bun run --watch src/index.ts --dev",
 		"lint": "eslint",
 		"lint:fix": "bun lint --fix",
-		"cleanup": "rm -rf logs node_modules bun.lockdb"
+		"cleanup": "rm -rf logs node_modules bun.lockb"
 	},
-	"type": "module",
-	"dependencies": {
-		"dotenv": "^16.4.7",
-		"redis": "^4.7.0"
-	}
+	"type": "module"
 }

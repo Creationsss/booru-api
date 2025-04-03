@@ -1,11 +1,9 @@
-import { redis } from "@database/redis";
 import { logger } from "@helpers/logger";
 
 import { serverHandler } from "./server";
 
 async function main(): Promise<void> {
 	try {
-		await redis.initialize();
 		serverHandler.initialize();
 	} catch (error) {
 		throw error;

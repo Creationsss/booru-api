@@ -4,13 +4,6 @@ type Environment = {
 	development: boolean;
 };
 
-type RedisConfig = {
-	host: string;
-	port: number;
-	username?: string;
-	password?: string;
-};
-
 type IBooruDefaults = {
 	search: string;
 	random: string;

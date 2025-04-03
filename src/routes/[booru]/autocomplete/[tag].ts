@@ -1,7 +1,6 @@
 import { determineBooru } from "@helpers/char";
 import { fetch } from "bun";
 
-import { redis } from "@/database/redis";
 import { logger } from "@/helpers/logger";
 
 const routeDef: RouteDef = {
@@ -17,7 +16,6 @@ async function handler(
 	query: Query,
 	params: Params,
 ): Promise<Response> {
-	const { force } = query as { force: string };
 	const { booru, tag } = params as { booru: string; tag: string };
 
 	if (!booru) {
@@ -47,6 +45,8 @@ async function handler(
 	}
 
 	const booruConfig: IBooruConfig | null = determineBooru(booru);
+	const isE621: boolean = booruConfig?.name === "e621.net";
+	const isGelbooru: boolean = booruConfig?.name === "gelbooru.com";
 
 	if (!booruConfig) {
 		return Response.json(
@@ -74,8 +74,6 @@ async function handler(
 		);
 	}
 
-	const isE621: boolean = booruConfig.name === "e621.net";
-
 	if (isE621 && tag.length < 3) {
 		return Response.json(
 			{
@@ -95,47 +93,6 @@ async function handler(
 	}
 	editedTag = editedTag.replace(/\s/g, "_");
 
-	const cacheKey: string = `nsfw:${booru}:autocomplete:${editedTag}`;
-
-	if (!force) {
-		const cacheData: unknown = await redis
-			.getInstance()
-			.get("JSON", cacheKey);
-
-		if (cacheData) {
-			const dataAsType: { count: number; data: unknown } = cacheData as {
-				count: number;
-				data: unknown;
-			};
-
-			if (dataAsType.count === 0) {
-				return Response.json(
-					{
-						success: false,
-						code: 404,
-						error: "No results found",
-					},
-					{
-						status: 404,
-					},
-				);
-			}
-
-			return Response.json(
-				{
-					success: true,
-					code: 200,
-					cache: true,
-					count: dataAsType.count,
-					data: dataAsType.data,
-				},
-				{
-					status: 200,
-				},
-			);
-		}
-	}
-
 	if (!booruConfig.autocomplete) {
 		return Response.json(
 			{
@@ -149,12 +106,15 @@ async function handler(
 		);
 	}
 
-	const url: string = `https://${booruConfig.autocomplete}${editedTag}`;
+	let url: string = `https://${booruConfig.autocomplete}${editedTag}`;
+
+	if (isGelbooru) {
+		url += `&api_key=${booruConfig.auth?.api_key}&user_id=${booruConfig.auth?.user_id}`;
+	}
 
 	try {
-		const headers: IBooruConfig["auth"] | undefined = booruConfig.auth
-			? booruConfig.auth
-			: undefined;
+		const headers: IBooruConfig["auth"] | undefined =
+			booruConfig.auth && isE621 ? booruConfig.auth : undefined;
 
 		const response: Response = await fetch(url, {
 			headers,
@@ -203,10 +163,6 @@ async function handler(
 		const resultCount: number = (data as unknown[]).length;
 
 		if (resultCount === 0) {
-			await redis
-				.getInstance()
-				.set("JSON", cacheKey, { count: 0, data }, 60 * 60 * 2); // 2 hours
-
 			return Response.json(
 				{
 					success: false,
@@ -219,15 +175,10 @@ async function handler(
 			);
 		}
 
-		await redis
-			.getInstance()
-			.set("JSON", cacheKey, { count: resultCount, data }, 60 * 60 * 24); // 24 hours
-
 		return Response.json(
 			{
 				success: true,
 				code: 200,
-				cache: false,
 				count: resultCount,
 				data,
 			},

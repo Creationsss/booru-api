@@ -8,12 +8,6 @@ export const environment: Environment = {
 		process.argv.includes("--dev"),
 };
 
-export const redisConfig: RedisConfig = {
-	host: process.env.REDIS_HOST || "dragonfly-redis",
-	port: parseInt(process.env.REDIS_PORT || "6379", 10),
-	password: process.env.REDIS_PASSWORD || undefined,
-};
-
 if (
 	!process.env.E621_USER_AGENT ||
 	!process.env.E621_USERNAME ||
@@ -38,5 +32,16 @@ export function getE621Auth(): Record<string, string> {
 		"User-Agent": e621UserAgent || "",
 		Authorization:
 			"Basic " + btoa(`${e621Username || ""}:${e621ApiKey || ""}`),
+	};
+}
+
+if (!process.env.GELBOORU_API_KEY || !process.env.GELBOORU_USER_ID) {
+	logger.error("Missing Gelbooru credentials in .env file");
+}
+
+export function gelBooruAUTH(): Record<string, string> {
+	return {
+		apiKey: process.env.GELBOORU_API_KEY || "",
+		userId: process.env.GELBOORU_USER_ID || "",
 	};
 }

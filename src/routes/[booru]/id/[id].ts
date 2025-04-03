@@ -1,7 +1,6 @@
 import { determineBooru, postExpectedFormat } from "@helpers/char";
 import { fetch } from "bun";
 
-import { redis } from "@/database/redis";
 import { logger } from "@/helpers/logger";
 
 const routeDef: RouteDef = {
@@ -17,8 +16,7 @@ async function handler(
 	query: Query,
 	params: Params,
 ): Promise<Response> {
-	const { force, tag_format } = query as {
-		force: string;
+	const { tag_format } = query as {
 		tag_format: string;
 	};
 	const { booru, id } = params as { booru: string; id: string };
@@ -37,6 +35,8 @@ async function handler(
 	}
 
 	const booruConfig: IBooruConfig | null = determineBooru(booru);
+	const isE621: boolean = booruConfig?.name === "e621.net";
+	const isGelbooru: boolean = booruConfig?.name === "gelbooru.com";
 
 	if (!booruConfig) {
 		return Response.json(
@@ -67,38 +67,19 @@ async function handler(
 	const funcString: string | [string, string] = booruConfig.functions.id;
 	let url: string = `https://${booruConfig.endpoint}/${booruConfig.functions.id}${id}`;
 
+	if (isGelbooru) {
+		url += `&api_key=${booruConfig.auth?.api_key}&user_id=${booruConfig.auth?.user_id}`;
+	}
+
 	if (Array.isArray(funcString)) {
 		const [start, end] = funcString;
 
 		url = `https://${booruConfig.endpoint}/${start}${id}${end}`;
 	}
 
-	const cacheKey: string = `nsfw:${booru}:tag_format(${tag_format}):${id}`;
-	if (!force) {
-		const cacheData: unknown = await redis
-			.getInstance()
-			.get("JSON", cacheKey);
-
-		if (cacheData) {
-			return Response.json(
-				{
-					success: true,
-					code: 200,
-					cache: true,
-					post:
-						(cacheData as { posts: BooruPost[] }).posts[0] || null,
-				},
-				{
-					status: 200,
-				},
-			);
-		}
-	}
-
 	try {
-		const headers: IBooruConfig["auth"] | undefined = booruConfig.auth
-			? booruConfig.auth
-			: undefined;
+		const headers: IBooruConfig["auth"] | undefined =
+			booruConfig.auth && isE621 ? booruConfig.auth : undefined;
 
 		const response: Response = await fetch(url, {
 			headers,
@@ -191,13 +172,10 @@ async function handler(
 			);
 		}
 
-		await redis.getInstance().set("JSON", cacheKey, expectedData, 60 * 30); // 30 minutes
-
 		return Response.json(
 			{
 				success: true,
 				code: 200,
-				cache: false,
 				post: expectedData?.posts[0] || null,
 			},
 			{

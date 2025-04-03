@@ -7,7 +7,6 @@ import {
 } from "@helpers/char";
 import { fetch } from "bun";
 
-import { redis } from "@/database/redis";
 import { logger } from "@/helpers/logger";
 
 const routeDef: RouteDef = {
@@ -24,7 +23,6 @@ async function handler(
 	query: Query,
 	params: Params,
 ): Promise<Response> {
-	const { force } = query as { force: string };
 	const { booru } = params as { booru: string };
 	const {
 		tags,
@@ -122,6 +120,7 @@ async function handler(
 	}
 
 	const isE621: boolean = booruConfig.name === "e621.net";
+	const isGelbooru: boolean = booruConfig.name === "gelbooru.com";
 
 	const formattedTags: string = tags ? tagsToExpectedFormat(tags) : "";
 	const formattedExcludeTags: string = excludeTags
@@ -165,35 +164,23 @@ async function handler(
 			parts.push("&");
 		}
 
+		if (isGelbooru) {
+			parts.push("api_key");
+			parts.push(booruConfig.auth?.apiKey || "");
+			parts.push("&");
+			parts.push("user_id");
+			parts.push(booruConfig.auth?.userId || "");
+			parts.push("&");
+		}
+
 		const queryParams: string = [tagsString(), page, resultsString]
 			.filter(Boolean)
 			.join("&");
 		parts.push(queryParams);
 
+		console.log("URL", parts.join(""));
 		return parts.join("");
 	};
-
-	const noResultsCacheKey: string = `nsfw:${booru}:random:noResults:${tagsString()}`;
-
-	if (!force) {
-		const cacheData: unknown = await redis
-			.getInstance()
-			.get("JSON", noResultsCacheKey);
-
-		if (cacheData) {
-			return Response.json(
-				{
-					success: false,
-					code: 404,
-					cache: true,
-					error: "No posts found with the given tags",
-				},
-				{
-					status: 404,
-				},
-			);
-		}
-	}
 
 	const config: { maxPage: number; maxTries: number } = {
 		maxPage: 12,
@@ -202,34 +189,6 @@ async function handler(
 	let state: { tries: number; page: number } = { tries: 0, page: 16 };
 
 	while (state.tries < config.maxTries) {
-		const cacheKey: string = `nsfw:${booru}:random:tag_format(${tag_format}):${tagsString()}:${results}:${state.page}`;
-		if (!force) {
-			const cacheData: unknown = await redis
-				.getInstance()
-				.get("JSON", cacheKey);
-
-			if (cacheData) {
-				const minimizedPosts: BooruPost[] = minPosts(
-					(cacheData as { posts: BooruPost[] }).posts,
-					results,
-				);
-
-				const shuffledPosts: BooruPost[] = shufflePosts(minimizedPosts);
-
-				return Response.json(
-					{
-						success: true,
-						code: 200,
-						cache: true,
-						posts: shuffledPosts,
-					},
-					{
-						status: 200,
-					},
-				);
-			}
-		}
-
 		const url: string = getUrl(pageString(state.page), resultsString);
 
 		try {
@@ -273,7 +232,7 @@ async function handler(
 			const parsedData: Data = data as Data;
 
 			let posts: BooruPost[] = [];
-			if (booruConfig.name === "realbooru.com") {
+			if (booruConfig.name === "realbooru.com" || isGelbooru) {
 				posts = parsedData.post || [];
 			} else {
 				if (parsedData.post) {
@@ -292,18 +251,13 @@ async function handler(
 
 			if (!expectedData) continue;
 
-			expectedData.posts = minPosts(expectedData.posts, results);
 			expectedData.posts = shufflePosts(expectedData.posts);
-
-			await redis
-				.getInstance()
-				.set("JSON", cacheKey, expectedData, 60 * 60 * 1); // 1 hours
+			expectedData.posts = minPosts(expectedData.posts, results);
 
 			return Response.json(
 				{
 					success: true,
 					code: 200,
-					cache: false,
 					posts: expectedData.posts,
 				},
 				{
@@ -325,8 +279,6 @@ async function handler(
 			}
 		}
 	}
-
-	await redis.getInstance().set("JSON", noResultsCacheKey, true, 60 * 10); // 10 minutes
 
 	logger.error([
 		"No posts found",

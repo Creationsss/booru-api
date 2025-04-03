@@ -5,8 +5,6 @@ import {
 } from "@helpers/char";
 import { fetch } from "bun";
 
-import { redis } from "@/database/redis";
-
 const routeDef: RouteDef = {
 	method: "POST",
 	accepts: "*/*",
@@ -21,7 +19,6 @@ async function handler(
 	query: Query,
 	params: Params,
 ): Promise<Response> {
-	const { force } = query as { force: string };
 	const { booru } = params as { booru: string };
 	const {
 		page = 0,
@@ -121,6 +118,7 @@ async function handler(
 	}
 
 	const isE621: boolean = booruConfig.name === "e621.net";
+	const isGelbooru: boolean = booruConfig.name === "gelbooru.com";
 
 	const formattedTags: string = tags ? tagsToExpectedFormat(tags) : "";
 	const formattedExcludeTags: string = excludeTags
@@ -164,6 +162,15 @@ async function handler(
 			parts.push("&");
 		}
 
+		if (isGelbooru) {
+			parts.push("api_key");
+			parts.push(booruConfig.auth?.apiKey || "");
+			parts.push("&");
+			parts.push("user_id");
+			parts.push(booruConfig.auth?.userId || "");
+			parts.push("&");
+		}
+
 		const queryParams: string = [tagsString(), pageString(), resultsString]
 			.filter(Boolean)
 			.join("&");
@@ -171,27 +178,6 @@ async function handler(
 
 		return parts.join("");
 	};
-
-	const cacheKey: string = `nsfw:${booru}:tag_format(${tag_format}):${formattedTags}:${formattedExcludeTags}:${safePage}:${safeResults}`;
-	if (!force) {
-		const cacheData: unknown = await redis
-			.getInstance()
-			.get("JSON", cacheKey);
-
-		if (cacheData) {
-			return Response.json(
-				{
-					success: true,
-					code: 200,
-					cache: true,
-					posts: (cacheData as { posts: BooruPost[] }).posts,
-				},
-				{
-					status: 200,
-				},
-			);
-		}
-	}
 
 	try {
 		const headers: IBooruConfig["auth"] | undefined = booruConfig.auth
@@ -274,13 +260,10 @@ async function handler(
 			);
 		}
 
-		await redis.getInstance().set("JSON", cacheKey, expectedData, 60 * 30); // 30 minutes
-
 		return Response.json(
 			{
 				success: true,
 				code: 200,
-				cache: false,
 				posts: expectedData.posts,
 			},
 			{
