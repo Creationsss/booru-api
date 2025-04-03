@@ -30,10 +30,12 @@ async function handler(
 		tags,
 		results = 5,
 		excludeTags,
+		tag_format = "formatted",
 	} = requestBody as {
 		tags: string[];
 		results: number;
 		excludeTags: string[];
+		tag_format: string;
 	};
 
 	if (!booru) {
@@ -200,7 +202,7 @@ async function handler(
 	let state: { tries: number; page: number } = { tries: 0, page: 16 };
 
 	while (state.tries < config.maxTries) {
-		const cacheKey: string = `nsfw:${booru}:random:${tagsString()}:${results}:${state.page}`;
+		const cacheKey: string = `nsfw:${booru}:random:tag_format(${tag_format}):${tagsString()}:${results}:${state.page}`;
 		if (!force) {
 			const cacheData: unknown = await redis
 				.getInstance()
@@ -286,7 +288,7 @@ async function handler(
 			if (posts.length === 0) continue;
 
 			let expectedData: { posts: BooruPost[] } | null =
-				postExpectedFormat(booruConfig, posts);
+				postExpectedFormat(booruConfig, posts, tag_format);
 
 			if (!expectedData) continue;
 

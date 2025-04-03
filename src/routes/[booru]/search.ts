@@ -28,11 +28,13 @@ async function handler(
 		tags,
 		results = 5,
 		excludeTags,
+		tag_format = "formatted",
 	} = requestBody as {
 		page: 0;
 		tags: string[] | string;
 		results: number;
 		excludeTags: string[] | string;
+		tag_format: string;
 	};
 
 	if (!booru) {
@@ -170,7 +172,7 @@ async function handler(
 		return parts.join("");
 	};
 
-	const cacheKey: string = `nsfw:${booru}:${formattedTags}:${formattedExcludeTags}:${safePage}:${safeResults}`;
+	const cacheKey: string = `nsfw:${booru}:tag_format(${tag_format}):${formattedTags}:${formattedExcludeTags}:${safePage}:${safeResults}`;
 	if (!force) {
 		const cacheData: unknown = await redis
 			.getInstance()
@@ -256,6 +258,7 @@ async function handler(
 		const expectedData: { posts: BooruPost[] } | null = postExpectedFormat(
 			booruConfig,
 			posts,
+			tag_format,
 		);
 
 		if (!expectedData) {

@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+
 import { booruConfig } from "@config/booru";
 
 export function timestampToReadable(timestamp?: number): string {
@@ -74,6 +76,7 @@ export function determineBooru(
 export function postExpectedFormat(
 	booru: IBooruConfig,
 	posts: BooruPost[] | BooruPost,
+	tag_format: string = "string",
 ): { posts: BooruPost[] } | null {
 	if (!posts) return null;
 
@@ -89,9 +92,12 @@ export function postExpectedFormat(
 					post_url:
 						post.post_url ??
 						`https://${booru.endpoint}/posts/${post.id}`,
-					tags: Object.values(post.tags || {})
-						.flat()
-						.join(" "),
+					tags:
+						tag_format === "unformatted"
+							? post.tags
+							: Object.values(post.tags || {})
+								.flat()
+								.join(" "),
 				};
 			}),
 		};

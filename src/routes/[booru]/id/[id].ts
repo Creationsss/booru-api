@@ -17,7 +17,10 @@ async function handler(
 	query: Query,
 	params: Params,
 ): Promise<Response> {
-	const { force } = query as { force: string };
+	const { force, tag_format } = query as {
+		force: string;
+		tag_format: string;
+	};
 	const { booru, id } = params as { booru: string; id: string };
 
 	if (!booru || !id) {
@@ -70,7 +73,7 @@ async function handler(
 		url = `https://${booruConfig.endpoint}/${start}${id}${end}`;
 	}
 
-	const cacheKey: string = `nsfw:${booru}:${id}`;
+	const cacheKey: string = `nsfw:${booru}:tag_format(${tag_format}):${id}`;
 	if (!force) {
 		const cacheData: unknown = await redis
 			.getInstance()
@@ -166,6 +169,7 @@ async function handler(
 		const expectedData: { posts: BooruPost[] } | null = postExpectedFormat(
 			booruConfig,
 			posts,
+			tag_format,
 		);
 
 		if (!expectedData) {
