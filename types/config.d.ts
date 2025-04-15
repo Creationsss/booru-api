@@ -18,7 +18,6 @@ type IBooruConfigMap = {
 		endpoint: string;
 		functions: IBooruDefaults;
 		autocomplete?: string;
-		auth?: Record<string, string>;
 	};
 };
 
@@ -29,5 +28,4 @@ type IBooruConfig = {
 	endpoint: string;
 	functions: IBooruDefaults;
 	autocomplete?: string;
-	auth?: Record<string, string>;
 };

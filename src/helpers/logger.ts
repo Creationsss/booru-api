@@ -1,14 +1,14 @@
-import { environment } from "@config/environment";
-import type { Stats } from "fs";
+import type { Stats } from "node:fs";
 import {
+	type WriteStream,
 	createWriteStream,
 	existsSync,
 	mkdirSync,
 	statSync,
-	WriteStream,
-} from "fs";
-import { EOL } from "os";
-import { basename, join } from "path";
+} from "node:fs";
+import { EOL } from "node:os";
+import { basename, join } from "node:path";
+import { environment } from "@config/environment";
 
 import { timestampToReadable } from "./char";
 
@@ -38,7 +38,7 @@ class Logger {
 			mkdirSync(logDir, { recursive: true });
 		}
 
-		let addSeparator: boolean = false;
+		let addSeparator = false;
 
 		if (existsSync(logFile)) {
 			const fileStats: Stats = statSync(logFile);
@@ -67,9 +67,9 @@ class Logger {
 
 	private extractFileName(stack: string): string {
 		const stackLines: string[] = stack.split("\n");
-		let callerFile: string = "";
+		let callerFile = "";
 
-		for (let i: number = 2; i < stackLines.length; i++) {
+		for (let i = 2; i < stackLines.length; i++) {
 			const line: string = stackLines[i].trim();
 			if (line && !line.includes("Logger.") && line.includes("(")) {
 				callerFile = line.split("(")[1]?.split(")")[0] || "";
@@ -92,7 +92,7 @@ class Logger {
 		return { filename, timestamp: readableTimestamp };
 	}
 
-	public info(message: string | string[], breakLine: boolean = false): void {
+	public info(message: string | string[], breakLine = false): void {
 		const stack: string = new Error().stack || "";
 		const { filename, timestamp } = this.getCallerInfo(stack);
 
@@ -111,7 +111,7 @@ class Logger {
 		this.writeConsoleMessageColored(logMessageParts, breakLine);
 	}
 
-	public warn(message: string | string[], breakLine: boolean = false): void {
+	public warn(message: string | string[], breakLine = false): void {
 		const stack: string = new Error().stack || "";
 		const { filename, timestamp } = this.getCallerInfo(stack);
 
@@ -132,7 +132,7 @@ class Logger {
 
 	public error(
 		message: string | string[] | Error | Error[],
-		breakLine: boolean = false,
+		breakLine = false,
 	): void {
 		const stack: string = new Error().stack || "";
 		const { filename, timestamp } = this.getCallerInfo(stack);
@@ -159,7 +159,7 @@ class Logger {
 
 	private writeConsoleMessageColored(
 		logMessageParts: ILogMessageParts,
-		breakLine: boolean = false,
+		breakLine = false,
 	): void {
 		const logMessage: string = Object.keys(logMessageParts)
 			.map((key: string) => {

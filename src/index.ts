@@ -3,11 +3,7 @@ import { logger } from "@helpers/logger";
 import { serverHandler } from "./server";
 
 async function main(): Promise<void> {
-	try {
-		serverHandler.initialize();
-	} catch (error) {
-		throw error;
-	}
+	serverHandler.initialize();
 }
 
 main().catch((error: Error) => {

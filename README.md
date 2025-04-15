@@ -48,21 +48,20 @@
 ---
 
 > **Note**
-> To use the **e621 API**, you must update the following environment variables in your `.env` file:
+> To use the **e621 Booru route**, include the following **headers** in your request:
 >
-> ```env
-> E621_USER_AGENT=YourApplication/1.0 (by username on e621)
-> E621_USERNAME=your-username
-> E621_API_KEY=your-apikey
+> ```http
+> e621UserAgent: YourApplication/1.0 (by username on e621)
+> e621Username: your-username
+> e621ApiKey: your-apikey
 > ```
-> Replace `your-username` and `your-apikey` with your e621 account credentials. Update the `User-Agent` string to include your application name, version, and a contact method (e.g., your e621 username) to comply with e621's API guidelines.
+> Replace `your-username` and `your-apikey` with your e621 account credentials. Update the `e621UserAgent` string to include your application name, version, and a contact method (e.g., your e621 username) to comply with e621's API guidelines.
 >
 >
-> To use the **Gelbooru API**, you must also update the following:
+> To use the **Gelbooru Booru route**, include these **headers** in your request:
 >
-> ```env
-> GELBOORU_API_KEY=your-apikey
-> GELBOORU_USER_ID=your-user-id
+> ```http
+> gelbooruApiKey: your-apikey
+> gelbooruUserId: your-user-id
 > ```
-> You can find these credentials in your [Gelbooru account settings](https://gelbooru.com/index.php?page=account&s=options).
-> These are required for authenticated API requests and higher rate limits.
+> You can find these credentials in your [Gelbooru account settings](https://gelbooru.com/index.php?page=account&s=options). These are required for authenticated API requests and higher rate limits.

@@ -1,7 +1,12 @@
-import { determineBooru, postExpectedFormat } from "@helpers/char";
+import {
+	determineBooru,
+	getE621Auth,
+	getGelBooruAuth,
+	postExpectedFormat,
+} from "@helpers/char";
 import { fetch } from "bun";
 
-import { logger } from "@/helpers/logger";
+import { logger } from "@helpers/logger";
 
 const routeDef: RouteDef = {
 	method: "GET",
@@ -10,7 +15,7 @@ const routeDef: RouteDef = {
 };
 
 async function handler(
-	_request: Request,
+	request: Request,
 	_server: BunServer,
 	_requestBody: unknown,
 	query: Query,
@@ -37,6 +42,22 @@ async function handler(
 	const booruConfig: IBooruConfig | null = determineBooru(booru);
 	const isE621: boolean = booruConfig?.name === "e621.net";
 	const isGelbooru: boolean = booruConfig?.name === "gelbooru.com";
+	const gelbooruAuth: Record<string, string> | null = getGelBooruAuth(
+		request.headers,
+	);
+
+	if (isGelbooru && !gelbooruAuth) {
+		return Response.json(
+			{
+				success: false,
+				code: 401,
+				error: "Missing Gelbooru authentication headers",
+			},
+			{
+				status: 401,
+			},
+		);
+	}
 
 	if (!booruConfig) {
 		return Response.json(
@@ -65,10 +86,10 @@ async function handler(
 	}
 
 	const funcString: string | [string, string] = booruConfig.functions.id;
-	let url: string = `https://${booruConfig.endpoint}/${booruConfig.functions.id}${id}`;
+	let url = `https://${booruConfig.endpoint}/${booruConfig.functions.id}${id}`;
 
-	if (isGelbooru) {
-		url += `&api_key=${booruConfig.auth?.api_key}&user_id=${booruConfig.auth?.user_id}`;
+	if (isGelbooru && gelbooruAuth) {
+		url += `?api_key=${gelbooruAuth.api_key}&user_id=${gelbooruAuth.user_id}`;
 	}
 
 	if (Array.isArray(funcString)) {
@@ -78,8 +99,30 @@ async function handler(
 	}
 
 	try {
-		const headers: IBooruConfig["auth"] | undefined =
-			booruConfig.auth && isE621 ? booruConfig.auth : undefined;
+		let headers: Record<string, string> | undefined;
+
+		if (isE621) {
+			const e621Auth: Record<string, string> | null = getE621Auth(
+				request.headers,
+			);
+
+			if (!e621Auth) {
+				return Response.json(
+					{
+						success: false,
+						code: 401,
+						error: "Missing E621 authentication headers",
+					},
+					{
+						status: 401,
+					},
+				);
+			}
+
+			headers = {
+				...e621Auth,
+			};
+		}
 
 		const response: Response = await fetch(url, {
 			headers,

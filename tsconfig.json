@@ -2,31 +2,15 @@
 	"compilerOptions": {
 		"baseUrl": "./",
 		"paths": {
-			"@/*": [
-				"src/*"
-			],
-			"@config/*": [
-				"config/*"
-			],
-			"@types/*": [
-				"types/*"
-			],
-			"@helpers/*": [
-				"src/helpers/*"
-			],
-			"@database/*": [
-				"src/database/*"
-			],
+			"@/*": ["src/*"],
+			"@config/*": ["config/*"],
+			"@types/*": ["types/*"],
+			"@helpers/*": ["src/helpers/*"],
+			"@database/*": ["src/database/*"]
 		},
-		"typeRoots": [
-			"./src/types",
-			"./node_modules/@types"
-		],
+		"typeRoots": ["./src/types", "./node_modules/@types"],
 		// Enable latest features
-		"lib": [
-			"ESNext",
-			"DOM"
-		],
+		"lib": ["ESNext", "DOM"],
 		"target": "ESNext",
 		"module": "ESNext",
 		"moduleDetection": "force",
@@ -44,11 +28,7 @@
 		// Some stricter flags (disabled by default)
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
-		"noPropertyAccessFromIndexSignature": false,
+		"noPropertyAccessFromIndexSignature": false
 	},
-	"include": [
-		"src",
-		"types",
-		"config"
-	],
+	"include": ["src", "types", "config"]
 }

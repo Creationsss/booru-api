@@ -58,8 +58,7 @@ class ServerHandler {
 
 			try {
 				const routeModule: RouteModule = await import(filePath);
-				const contentType: string | null =
-					request.headers.get("Content-Type");
+				const contentType: string | null = request.headers.get("Content-Type");
 				const actualContentType: string | null = contentType
 					? contentType.split(";")[0].trim()
 					: null;
@@ -119,10 +118,7 @@ class ServerHandler {
 							params,
 						);
 
-						response.headers.set(
-							"Content-Type",
-							routeModule.routeDef.returns,
-						);
+						response.headers.set("Content-Type", routeModule.routeDef.returns);
 					}
 				}
 			} catch (error: unknown) {

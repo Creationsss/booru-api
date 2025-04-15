@@ -1,5 +1,4 @@
 {
-    "cSpell.words": [
-        "Booru"
-    ]
+	"cSpell.words": ["Booru"],
+	"explorer.excludeGitIgnore": false
 }

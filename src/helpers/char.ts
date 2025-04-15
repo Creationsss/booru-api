@@ -4,15 +4,15 @@ import { booruConfig } from "@config/booru";
 
 export function timestampToReadable(timestamp?: number): string {
 	const date: Date =
-		timestamp && !isNaN(timestamp) ? new Date(timestamp) : new Date();
-	if (isNaN(date.getTime())) return "Invalid Date";
+		timestamp && !Number.isNaN(timestamp) ? new Date(timestamp) : new Date();
+	if (Number.isNaN(date.getTime())) return "Invalid Date";
 	return date.toISOString().replace("T", " ").replace("Z", "");
 }
 
 export function tagsToExpectedFormat(
 	tags: string[] | string | Record<string, string[]>,
-	minus: boolean = false,
-	onlyMinus: boolean = false,
+	minus = false,
+	onlyMinus = false,
 ): string {
 	const delimiter: string = minus ? (onlyMinus ? "-" : "+-") : "+";
 
@@ -76,7 +76,7 @@ export function determineBooru(
 export function postExpectedFormat(
 	booru: IBooruConfig,
 	posts: BooruPost[] | BooruPost,
-	tag_format: string = "string",
+	tag_format = "string",
 ): { posts: BooruPost[] } | null {
 	if (!posts) return null;
 
@@ -90,40 +90,64 @@ export function postExpectedFormat(
 					...post,
 					file_url: post.file.url ?? null,
 					post_url:
-						post.post_url ??
-						`https://${booru.endpoint}/posts/${post.id}`,
+						post.post_url ?? `https://${booru.endpoint}/posts/${post.id}`,
 					tags:
 						tag_format === "unformatted"
 							? post.tags
 							: Object.values(post.tags || {})
-								.flat()
-								.join(" "),
+									.flat()
+									.join(" "),
 				};
 			}),
 		};
 	}
 
 	const fixedDomain: string = booru.endpoint.replace(/^api\./, "");
-	const formattedPosts: BooruPost[] = normalizedPosts.map(
-		(post: BooruPost) => {
-			const postUrl: string =
-				post.post_url ??
-				`https://${fixedDomain}/index.php?page=post&s=view&id=${post.id}`;
-			const imageExtension: string =
-				post.image?.substring(post.image.lastIndexOf(".") + 1) ?? "";
-			const fileUrl: string | null =
-				post.file_url ??
-				(post.directory && post.hash && imageExtension
-					? `https://${booru.endpoint}/images/${post.directory}/${post.hash}.${imageExtension}`
-					: null);
+	const formattedPosts: BooruPost[] = normalizedPosts.map((post: BooruPost) => {
+		const postUrl: string =
+			post.post_url ??
+			`https://${fixedDomain}/index.php?page=post&s=view&id=${post.id}`;
+		const imageExtension: string =
+			post.image?.substring(post.image.lastIndexOf(".") + 1) ?? "";
+		const fileUrl: string | null =
+			post.file_url ??
+			(post.directory && post.hash && imageExtension
+				? `https://${booru.endpoint}/images/${post.directory}/${post.hash}.${imageExtension}`
+				: null);
 
-			return {
-				...post,
-				file_url: fileUrl,
-				post_url: postUrl,
-			};
-		},
-	);
+		return {
+			...post,
+			file_url: fileUrl,
+			post_url: postUrl,
+		};
+	});
 
 	return { posts: formattedPosts };
+}
+
+export function getE621Auth(headers: Headers): Record<string, string> | null {
+	const userAgent = headers.get("e621UserAgent") ?? "";
+	const username = headers.get("e621Username");
+	const apiKey = headers.get("e621ApiKey");
+
+	if (!userAgent || !username || !apiKey) return null;
+
+	return {
+		"User-Agent": userAgent,
+		Authorization: `Basic ${btoa(`${username}:${apiKey}`)}`,
+	};
+}
+
+export function getGelBooruAuth(
+	headers: Headers,
+): Record<string, string> | null {
+	const apiKey = headers.get("gelbooruApiKey");
+	const userId = headers.get("gelbooruUserId");
+
+	if (!apiKey || !userId) return null;
+
+	return {
+		apiKey,
+		userId,
+	};
 }

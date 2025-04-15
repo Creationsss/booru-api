@@ -1,5 +1,7 @@
 import {
 	determineBooru,
+	getE621Auth,
+	getGelBooruAuth,
 	minPosts,
 	postExpectedFormat,
 	shufflePosts,
@@ -7,7 +9,7 @@ import {
 } from "@helpers/char";
 import { fetch } from "bun";
 
-import { logger } from "@/helpers/logger";
+import { logger } from "@helpers/logger";
 
 const routeDef: RouteDef = {
 	method: "POST",
@@ -17,7 +19,7 @@ const routeDef: RouteDef = {
 };
 
 async function handler(
-	_request: Request,
+	request: Request,
 	_server: BunServer,
 	requestBody: unknown,
 	query: Query,
@@ -121,6 +123,22 @@ async function handler(
 
 	const isE621: boolean = booruConfig.name === "e621.net";
 	const isGelbooru: boolean = booruConfig.name === "gelbooru.com";
+	const gelbooruAuth: Record<string, string> | null = getGelBooruAuth(
+		request.headers,
+	);
+
+	if (isGelbooru && !gelbooruAuth) {
+		return Response.json(
+			{
+				success: false,
+				code: 401,
+				error: "Missing Gelbooru authentication headers",
+			},
+			{
+				status: 401,
+			},
+		);
+	}
 
 	const formattedTags: string = tags ? tagsToExpectedFormat(tags) : "";
 	const formattedExcludeTags: string = excludeTags
@@ -130,9 +148,11 @@ async function handler(
 	const tagsString: () => string = (): string => {
 		if (formattedTags && formattedExcludeTags) {
 			return `tags=${formattedTags}+-${formattedExcludeTags}`;
-		} else if (formattedTags) {
+		}
+		if (formattedTags) {
 			return `tags=${formattedTags}`;
-		} else if (formattedExcludeTags) {
+		}
+		if (formattedExcludeTags) {
 			return `tags=-${formattedExcludeTags}`;
 		}
 
@@ -164,12 +184,12 @@ async function handler(
 			parts.push("&");
 		}
 
-		if (isGelbooru) {
+		if (isGelbooru && gelbooruAuth) {
 			parts.push("api_key");
-			parts.push(booruConfig.auth?.apiKey || "");
+			parts.push(gelbooruAuth.apiKey);
 			parts.push("&");
 			parts.push("user_id");
-			parts.push(booruConfig.auth?.userId || "");
+			parts.push(gelbooruAuth.userId);
 			parts.push("&");
 		}
 
@@ -178,7 +198,6 @@ async function handler(
 			.join("&");
 		parts.push(queryParams);
 
-		console.log("URL", parts.join(""));
 		return parts.join("");
 	};
 
@@ -186,15 +205,37 @@ async function handler(
 		maxPage: 12,
 		maxTries: 6,
 	};
-	let state: { tries: number; page: number } = { tries: 0, page: 16 };
+	const state: { tries: number; page: number } = { tries: 0, page: 16 };
 
 	while (state.tries < config.maxTries) {
 		const url: string = getUrl(pageString(state.page), resultsString);
 
 		try {
-			const headers: IBooruConfig["auth"] | undefined = booruConfig.auth
-				? booruConfig.auth
-				: undefined;
+			let headers: Record<string, string> | undefined;
+
+			if (isE621) {
+				const e621Auth: Record<string, string> | null = getE621Auth(
+					request.headers,
+				);
+
+				if (!e621Auth) {
+					return Response.json(
+						{
+							success: false,
+							code: 401,
+							error: "Missing E621 authentication headers",
+						},
+						{
+							status: 401,
+						},
+					);
+				}
+
+				headers = {
+					...e621Auth,
+				};
+			}
+
 			const response: Response = await fetch(url, {
 				headers,
 			});
@@ -204,9 +245,7 @@ async function handler(
 					{
 						success: false,
 						code: response.status || 500,
-						error:
-							response.statusText ||
-							`Could not reach ${booruConfig.name}`,
+						error: response.statusText || `Could not reach ${booruConfig.name}`,
 					},
 					{
 						status: response.status || 500,
@@ -246,8 +285,11 @@ async function handler(
 
 			if (posts.length === 0) continue;
 
-			let expectedData: { posts: BooruPost[] } | null =
-				postExpectedFormat(booruConfig, posts, tag_format);
+			const expectedData: { posts: BooruPost[] } | null = postExpectedFormat(
+				booruConfig,
+				posts,
+				tag_format,
+			);
 
 			if (!expectedData) continue;
 
@@ -265,7 +307,6 @@ async function handler(
 				},
 			);
 		} catch {
-			continue;
 		} finally {
 			state.tries++;
 
