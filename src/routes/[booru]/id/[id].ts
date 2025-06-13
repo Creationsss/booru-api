@@ -1,12 +1,16 @@
+import { echo } from "@atums/echo";
+import { fetch } from "bun";
 import {
 	determineBooru,
 	getE621Auth,
 	getGelBooruAuth,
 	postExpectedFormat,
-} from "@helpers/char";
-import { fetch } from "bun";
+} from "#lib/char";
 
-import { logger } from "@helpers/logger";
+import type { BooruPost, Data } from "#types/booruResponses";
+import type { ExtendedRequest } from "#types/bun";
+import type { IBooruConfig } from "#types/config";
+import type { RouteDef } from "#types/routes";
 
 const routeDef: RouteDef = {
 	method: "GET",
@@ -14,17 +18,11 @@ const routeDef: RouteDef = {
 	returns: "application/json",
 };
 
-async function handler(
-	request: Request,
-	_server: BunServer,
-	_requestBody: unknown,
-	query: Query,
-	params: Params,
-): Promise<Response> {
-	const { tag_format } = query as {
+async function handler(request: ExtendedRequest): Promise<Response> {
+	const { tag_format } = request.query as {
 		tag_format: string;
 	};
-	const { booru, id } = params as { booru: string; id: string };
+	const { booru, id } = request.params as { booru: string; id: string };
 
 	if (!booru || !id) {
 		return Response.json(
@@ -89,7 +87,7 @@ async function handler(
 	let url = `https://${booruConfig.endpoint}/${booruConfig.functions.id}${id}`;
 
 	if (isGelbooru && gelbooruAuth) {
-		url += `?api_key=${gelbooruAuth.api_key}&user_id=${gelbooruAuth.user_id}`;
+		url += `?api_key=${gelbooruAuth.apiKey}&user_id=${gelbooruAuth.userId}`;
 	}
 
 	if (Array.isArray(funcString)) {
@@ -99,7 +97,7 @@ async function handler(
 	}
 
 	try {
-		let headers: Record<string, string> | undefined;
+		let headers: Record<string, string> = {};
 
 		if (isE621) {
 			const e621Auth: Record<string, string> | null = getE621Auth(
@@ -129,7 +127,7 @@ async function handler(
 		});
 
 		if (!response.ok) {
-			logger.error([
+			echo.error([
 				"Failed to fetch post",
 				`Booru: ${booru}`,
 				`ID: ${id}`,
@@ -152,7 +150,7 @@ async function handler(
 		const data: unknown = await response.json();
 
 		if (!data) {
-			logger.error(["No data returned", `Booru: ${booru}`, `ID: ${id}`]);
+			echo.error(["No data returned", `Booru: ${booru}`, `ID: ${id}`]);
 			return Response.json(
 				{
 					success: false,
@@ -177,7 +175,7 @@ async function handler(
 		}
 
 		if (posts.length === 0) {
-			logger.error(["No posts found", `Booru: ${booru}`, `ID: ${id}`]);
+			echo.error(["No posts found", `Booru: ${booru}`, `ID: ${id}`]);
 			return Response.json(
 				{
 					success: false,
@@ -197,7 +195,7 @@ async function handler(
 		);
 
 		if (!expectedData) {
-			logger.error([
+			echo.error([
 				"Unexpected data format",
 				`Booru: ${booru}`,
 				`ID: ${id}`,

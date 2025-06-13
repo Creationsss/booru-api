@@ -1,3 +1,5 @@
+import { echo } from "@atums/echo";
+import { type Server, fetch } from "bun";
 import {
 	determineBooru,
 	getE621Auth,
@@ -6,10 +8,12 @@ import {
 	postExpectedFormat,
 	shufflePosts,
 	tagsToExpectedFormat,
-} from "@helpers/char";
-import { fetch } from "bun";
+} from "#lib/char";
 
-import { logger } from "@helpers/logger";
+import type { BooruPost, Data } from "#types/booruResponses";
+import type { ExtendedRequest } from "#types/bun";
+import type { IBooruConfig } from "#types/config";
+import type { RouteDef } from "#types/routes";
 
 const routeDef: RouteDef = {
 	method: "POST",
@@ -19,13 +23,11 @@ const routeDef: RouteDef = {
 };
 
 async function handler(
-	request: Request,
-	_server: BunServer,
+	request: ExtendedRequest,
+	_server: Server,
 	requestBody: unknown,
-	query: Query,
-	params: Params,
 ): Promise<Response> {
-	const { booru } = params as { booru: string };
+	const { booru } = request.params as { booru: string };
 	const {
 		tags,
 		results = 5,
@@ -184,7 +186,12 @@ async function handler(
 			parts.push("&");
 		}
 
-		if (isGelbooru && gelbooruAuth) {
+		if (
+			isGelbooru &&
+			gelbooruAuth &&
+			gelbooruAuth.apiKey &&
+			gelbooruAuth.userId
+		) {
 			parts.push("api_key");
 			parts.push(gelbooruAuth.apiKey);
 			parts.push("&");
@@ -211,7 +218,7 @@ async function handler(
 		const url: string = getUrl(pageString(state.page), resultsString);
 
 		try {
-			let headers: Record<string, string> | undefined;
+			let headers: Record<string, string> = {};
 
 			if (isE621) {
 				const e621Auth: Record<string, string> | null = getE621Auth(
@@ -272,7 +279,11 @@ async function handler(
 
 			let posts: BooruPost[] = [];
 			if (booruConfig.name === "realbooru.com" || isGelbooru) {
-				posts = parsedData.post || [];
+				if (parsedData.post) {
+					posts = Array.isArray(parsedData.post)
+						? parsedData.post
+						: [parsedData.post];
+				}
 			} else {
 				if (parsedData.post) {
 					posts = [parsedData.post];
@@ -321,7 +332,7 @@ async function handler(
 		}
 	}
 
-	logger.error([
+	echo.error([
 		"No posts found",
 		`Booru: ${booru}`,
 		`Tags: ${tagsString()}`,

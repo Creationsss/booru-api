@@ -1,0 +1,40 @@
+{
+	"directory": "logs",
+	"level": "debug",
+	"disableFile": false,
+
+	"rotate": true,
+	"maxFiles": 3,
+	"fileNameFormat": "yyyy-MM-dd",
+
+	"console": true,
+	"consoleColor": true,
+
+	"dateFormat": "yyyy-MM-dd HH:mm:ss.SSS",
+	"timezone": "local",
+
+	"silent": false,
+
+	"pattern": "{color:gray}{pretty-timestamp}{reset} {color:levelColor}[{level-name}]{reset} {color:gray}({reset}{file-name}:{color:blue}{line}{reset}:{color:blue}{column}{color:gray}){reset} {data}",
+	"levelColor": {
+		"debug": "blue",
+		"info": "green",
+		"warn": "yellow",
+		"error": "red",
+		"fatal": "red"
+	},
+
+	"customPattern": "{color:gray}{pretty-timestamp}{reset} {color:tagColor}[{tag}]{reset} {color:contextColor}({context}){reset} {data}",
+	"customColors": {
+		"GET": "green",
+		"POST": "blue",
+		"PUT": "yellow",
+		"DELETE": "red",
+		"PATCH": "cyan",
+		"HEAD": "magenta",
+		"OPTIONS": "white",
+		"TRACE": "gray"
+	},
+
+	"prettyPrint": true
+}

@@ -1,3 +1,5 @@
+import type { RouteDef } from "#types/routes";
+
 const routeDef: RouteDef = {
 	method: "GET",
 	accepts: "*/*",

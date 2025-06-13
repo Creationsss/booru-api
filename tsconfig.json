@@ -2,33 +2,29 @@
 	"compilerOptions": {
 		"baseUrl": "./",
 		"paths": {
-			"@/*": ["src/*"],
-			"@config/*": ["config/*"],
-			"@types/*": ["types/*"],
-			"@helpers/*": ["src/helpers/*"],
-			"@database/*": ["src/database/*"]
+			"#*": ["src/*"],
+			"#types/*": ["types/*"],
+			"#environment": ["config/index.ts"],
+			"#environment/*": ["config/*"]
 		},
-		"typeRoots": ["./src/types", "./node_modules/@types"],
-		// Enable latest features
+		"typeRoots": ["./node_modules/@types"],
 		"lib": ["ESNext", "DOM"],
 		"target": "ESNext",
 		"module": "ESNext",
 		"moduleDetection": "force",
-		"jsx": "react-jsx",
-		"allowJs": true,
-		// Bundler mode
+		"allowJs": false,
 		"moduleResolution": "bundler",
-		"allowImportingTsExtensions": true,
+		"allowImportingTsExtensions": false,
 		"verbatimModuleSyntax": true,
 		"noEmit": true,
-		// Best practices
 		"strict": true,
 		"skipLibCheck": true,
 		"noFallthroughCasesInSwitch": true,
-		// Some stricter flags (disabled by default)
-		"noUnusedLocals": false,
-		"noUnusedParameters": false,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"exactOptionalPropertyTypes": true,
+		"noUncheckedIndexedAccess": true,
 		"noPropertyAccessFromIndexSignature": false
 	},
-	"include": ["src", "types", "config"]
+	"include": ["src", "environment", "config"]
 }

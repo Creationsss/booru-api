@@ -2,13 +2,8 @@
 	"name": "booru-api",
 	"module": "src/index.ts",
 	"devDependencies": {
-		"@biomejs/biome": "^1.9.4",
-		"@eslint/js": "^9.24.0",
-		"@types/bun": "^1.2.9",
-		"globals": "^16.0.0"
-	},
-	"peerDependencies": {
-		"typescript": "^5.8.3"
+		"@biomejs/biome": "latest",
+		"@types/bun": "latest"
 	},
 	"scripts": {
 		"start": "bun run src/index.ts",
@@ -17,5 +12,8 @@
 		"lint:fix": "bunx biome check --fix",
 		"cleanup": "rm -rf logs node_modules bun.lock"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"@atums/echo": "latest"
+	}
 }

@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": true,
-		"ignore": []
+		"ignore": ["dist"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -17,11 +17,30 @@
 	"organizeImports": {
 		"enabled": true
 	},
+	"css": {
+		"formatter": {
+			"indentStyle": "tab",
+			"lineEnding": "lf"
+		}
+	},
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
-		}
+			"recommended": true,
+			"correctness": {
+				"noUnusedImports": "error",
+				"noUnusedVariables": "error"
+			},
+			"suspicious": {
+				"noConsole": "error"
+			},
+			"style": {
+				"useConst": "error",
+				"noVar": "error",
+				"useImportType": "error"
+			}
+		},
+		"ignore": ["types"]
 	},
 	"javascript": {
 		"formatter": {

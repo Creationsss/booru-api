@@ -1,3 +1,5 @@
+import type { Server } from "bun";
+
 type RouteDef = {
 	method: string;
 	accepts: string | null;
@@ -11,10 +13,10 @@ type Params = Record<string, string>;
 type RouteModule = {
 	handler: (
 		request: Request,
-		server: BunServer,
+		server: Server,
 		requestBody: unknown,
-		query: Query,
-		params: Params,
 	) => Promise<Response> | Response;
 	routeDef: RouteDef;
 };
+
+export type { RouteDef, Query, Params, RouteModule };

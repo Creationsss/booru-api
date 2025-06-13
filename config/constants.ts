@@ -1,12 +1,19 @@
 // cSpell:disable
 
+const reqLoggerIgnores = {
+	ignoredStartsWith: ["/public"],
+	ignoredPaths: ["/favicon.ico"],
+};
+
+import type { IBooruConfigMap, IBooruDefaults } from "#types/config";
+
 const booruDefaults: IBooruDefaults = {
 	search: "index.php?page=dapi&s=post&q=index&json=1",
 	random: "s",
 	id: "index.php?page=dapi&s=post&q=index&json=1&id=",
 };
 
-export const booruConfig: IBooruConfigMap = {
+const booruConfig: IBooruConfigMap = {
 	"rule34.xxx": {
 		enabled: true,
 		name: "rule34.xxx",
@@ -76,3 +83,5 @@ export const booruConfig: IBooruConfigMap = {
 		functions: booruDefaults,
 	},
 };
+
+export { reqLoggerIgnores, booruConfig, booruDefaults };

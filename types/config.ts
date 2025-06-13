@@ -29,3 +29,5 @@ type IBooruConfig = {
 	functions: IBooruDefaults;
 	autocomplete?: string;
 };
+
+export type { Environment, IBooruDefaults, IBooruConfigMap, IBooruConfig };

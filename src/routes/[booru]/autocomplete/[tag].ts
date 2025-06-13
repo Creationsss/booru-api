@@ -1,7 +1,10 @@
-import { determineBooru, getE621Auth, getGelBooruAuth } from "@helpers/char";
+import { echo } from "@atums/echo";
 import { fetch } from "bun";
+import { determineBooru, getE621Auth, getGelBooruAuth } from "#lib/char";
 
-import { logger } from "@helpers/logger";
+import type { ExtendedRequest } from "#types/bun";
+import type { IBooruConfig } from "#types/config";
+import type { RouteDef } from "#types/routes";
 
 const routeDef: RouteDef = {
 	method: "GET",
@@ -9,14 +12,8 @@ const routeDef: RouteDef = {
 	returns: "application/json",
 };
 
-async function handler(
-	request: Request,
-	_server: BunServer,
-	_requestBody: unknown,
-	query: Query,
-	params: Params,
-): Promise<Response> {
-	const { booru, tag } = params as { booru: string; tag: string };
+async function handler(request: ExtendedRequest): Promise<Response> {
+	const { booru, tag } = request.params as { booru: string; tag: string };
 
 	if (!booru) {
 		return Response.json(
@@ -125,11 +122,11 @@ async function handler(
 	let url = `https://${booruConfig.autocomplete}${editedTag}`;
 
 	if (isGelbooru && gelbooruAuth) {
-		url += `?api_key=${gelbooruAuth.api_key}&user_id=${gelbooruAuth.user_id}`;
+		url += `?api_key=${gelbooruAuth.apiKey}&user_id=${gelbooruAuth.userId}`;
 	}
 
 	try {
-		let headers: Record<string, string> | undefined;
+		let headers: Record<string, string> = {};
 
 		if (isE621) {
 			const e621Auth: Record<string, string> | null = getE621Auth(
@@ -159,7 +156,7 @@ async function handler(
 		});
 
 		if (!response.ok) {
-			logger.error([
+			echo.error([
 				"Failed to fetch post",
 				`Booru: ${booru}`,
 				`Status: ${response.status}`,
@@ -181,11 +178,7 @@ async function handler(
 		const data: unknown = await response.json();
 
 		if (!data) {
-			logger.error([
-				"No data returned",
-				`Booru: ${booru}`,
-				`Tag: ${editedTag}`,
-			]);
+			echo.error(["No data returned", `Booru: ${booru}`, `Tag: ${editedTag}`]);
 			return Response.json(
 				{
 					success: false,
@@ -225,7 +218,7 @@ async function handler(
 			},
 		);
 	} catch (error) {
-		logger.error([
+		echo.error([
 			"Failed to fetch post",
 			`Booru: ${booru}`,
 			`Tag: ${editedTag}`,
